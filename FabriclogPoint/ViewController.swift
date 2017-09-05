@@ -161,7 +161,6 @@ class ViewController: UIViewController, ViewControllerDelegate, UITableViewDataS
                     let resjson = try JSONSerialization.jsonObject(with: data!, options: []) as? [String: Any]
                     print(resjson)
                     if resjson?["error"] != nil {
-                        print(resjson?["error"])
                         DispatchQueue.main.async {
                             self.dispAlert(title: "ログインエラー", message: "ユーザー名、もしくはパスワードが間違っています。")
                             self.getPointButton.isEnabled = false
