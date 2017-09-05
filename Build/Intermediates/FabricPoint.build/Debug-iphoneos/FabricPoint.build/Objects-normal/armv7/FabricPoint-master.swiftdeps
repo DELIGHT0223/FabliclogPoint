@@ -1,0 +1,8 @@
+version: "Apple Swift version 3.1 (swiftlang-802.0.53 clang-802.0.42)"
+options: "93fdd01ebd8ccafcaa4a0cb5d01793cb"
+build_time: [556675950, 833532000]
+inputs:
+  "/Users/doki/Desktop/code12/FabriclogPoint/FabricPoint/ViewController.swift": [556352380, 0]
+  "/Users/doki/Desktop/code12/FabriclogPoint/FabricPoint/PointUseViewController.swift": [554798510, 0]
+  "/Users/doki/Desktop/code12/FabriclogPoint/FabricPoint/AppDelegate.swift": [553229271, 0]
+  "/Users/doki/Desktop/code12/FabriclogPoint/FabricPoint/CameraViewController.swift": [554799313, 0]
