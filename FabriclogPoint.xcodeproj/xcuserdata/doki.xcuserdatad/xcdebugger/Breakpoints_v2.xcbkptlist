@@ -10,11 +10,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "FabriclogPoint/ViewController.swift"
-            timestampString = "525927585.093214"
+            timestampString = "526443378.484087"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "162"
-            endingLineNumber = "162"
+            startingLineNumber = "171"
+            endingLineNumber = "171"
             landmarkName = "getPointInfo()"
             landmarkType = "7">
          </BreakpointContent>

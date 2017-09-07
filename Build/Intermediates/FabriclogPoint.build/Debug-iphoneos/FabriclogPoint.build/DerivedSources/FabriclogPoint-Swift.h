@@ -196,6 +196,7 @@ SWIFT_CLASS("_TtC14FabriclogPoint22PointUseViewController")
 @class UITextField;
 @class UILabel;
 @class NSDictionary;
+@class logPoint;
 @class UIStoryboardSegue;
 @class NSURLResponse;
 @class UITapGestureRecognizer;
@@ -228,6 +229,7 @@ SWIFT_CLASS("_TtC14FabriclogPoint14ViewController")
 @property (nonatomic) BOOL logstart;
 @property (nonatomic) NSInteger blockNum;
 @property (nonatomic, copy) NSArray<NSDictionary *> * _Nonnull logArray;
+@property (nonatomic, copy) NSArray<logPoint *> * _Nonnull logDescend;
 - (void)viewDidLoad;
 - (void)prepareForSegue:(UIStoryboardSegue * _Nonnull)segue sender:(id _Nullable)sender;
 - (void)initLogin SWIFT_METHOD_FAMILY(none);
@@ -240,6 +242,7 @@ SWIFT_CLASS("_TtC14FabriclogPoint14ViewController")
 - (void)executeJsonRpcWithUrl_exec:(NSString * _Nonnull)url_exec JSONdata:(NSData * _Nonnull)JSONdata callback:(void (^ _Nonnull)(NSData * _Nullable, NSURLResponse * _Nullable, NSError * _Nullable))callback;
 - (void)executeGetChainInfoWithCallback:(void (^ _Nonnull)(NSData * _Nullable, NSURLResponse * _Nullable, NSError * _Nullable))callback;
 - (void)dispAlertWithTitle:(NSString * _Nonnull)title message:(NSString * _Nonnull)message;
+- (NSString * _Nonnull)getToday SWIFT_WARN_UNUSED_RESULT;
 - (IBAction)pushLogin:(UIButton * _Nonnull)sender;
 - (IBAction)pushNewAccount:(UIButton * _Nonnull)sender;
 - (IBAction)tapView:(UITapGestureRecognizer * _Nonnull)sender;

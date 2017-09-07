@@ -56,6 +56,12 @@ class ViewController: UIViewController, ViewControllerDelegate, UITableViewDataS
     var blockNum: Int = 1
     
     var logArray = [NSDictionary]()
+    var logDescend = [logPoint]()
+    
+    class logPoint: NSObject {
+        var tms: String = ""
+        var point: Int64 = 0
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -119,11 +125,12 @@ class ViewController: UIViewController, ViewControllerDelegate, UITableViewDataS
     }
     
     func initDeploy() {
-        url = url_host + "chaincode";
-        let JSONdata = createJSONdataForPointApp(method: "deploy", functionName: "init", args: [], id: 1)
+//        url = url_host + "chaincode"
+//        //let today = getToday()
+//        let JSONdata = createJSONdataForPointApp(method: "deploy", functionName: "init", args: [], id: 1)
         
-//        url = url_host + "chaincode";
-//        let JSONdata = createJSONdataForPointApp(method: "deploy", functionName: "get_all", args: ["4590dc3aea0f4aa3c6438d801da885ab32addeb0cdf7884d5e66c70b5f713dab2d7eb6ac2e09a4f29bbcf25eea242eeef4fc191b494c31ad3995b41fdd7047ef"], id: 1)
+        url = url_host + "chaincode";
+        let JSONdata = createJSONdataForPointApp(method: "deploy", functionName: "get_all", args: ["ce4dcfaecae4ca6dd3e37dddc473ff61b956b9b11909ffcc47959c8fc75958b8d8d44cc17cd830ca9052af3d357a0f758f1c042c3c3022cb638fd6073a527f7c"], id: 1)
         
         executeJsonRpc(url_exec: url, JSONdata: JSONdata) {
             (data, response, error) in
@@ -197,9 +204,10 @@ class ViewController: UIViewController, ViewControllerDelegate, UITableViewDataS
     // heightなし
     func checkUser() {
         url = url_host + "chaincode"
+        let today = getToday()
         let checkName: String = userNameField.text!
         let checkPass: String = passField.text!
-        let JSONData = createJSONdataForPointApp(method: "query", functionName: "refresh", args: [checkName, checkPass], id: 5)
+        let JSONData = createJSONdataForPointApp(method: "query", functionName: "refresh", args: [today, checkName, checkPass], id: 5)
         executeJsonRpc(url_exec: url, JSONdata: JSONData) {
             (data, response, error) in
             if error != nil {
@@ -231,7 +239,8 @@ class ViewController: UIViewController, ViewControllerDelegate, UITableViewDataS
     
     func addUser(userName: String, userPass: String) {
         url = url_host + "chaincode"
-        let JSONData = createJSONdataForPointApp(method: "invoke", functionName: "addUser", args: [userName, userPass], id: 6)
+        let today = getToday()
+        let JSONData = createJSONdataForPointApp(method: "invoke", functionName: "addUser", args: [today, userName, userPass], id: 6)
         executeJsonRpc(url_exec: url, JSONdata: JSONData) {
             (data, response, error) in
             if error != nil {
@@ -280,8 +289,9 @@ class ViewController: UIViewController, ViewControllerDelegate, UITableViewDataS
                     } else {
                         print(qrString)
                         self.url = self.url_host + "chaincode"
+                        let today = self.getToday()
                         if self.login_user != "" && self.login_pass != "" {
-                            let JSONdata = self.createJSONdataForPointApp(method: "invoke", functionName: "pointUp", args: [self.login_user, self.login_pass, qrString], id: 3)
+                            let JSONdata = self.createJSONdataForPointApp(method: "invoke", functionName: "pointUp", args: [today, self.login_user, self.login_pass, qrString], id: 3)
                             self.executeJsonRpc(url_exec: self.url, JSONdata: JSONdata) {
                                 (data, responce, error) in
                                 if error != nil {
@@ -431,6 +441,12 @@ class ViewController: UIViewController, ViewControllerDelegate, UITableViewDataS
         present(alert, animated: true, completion: nil)
     }
     
+    func getToday() -> String {
+        let now = Date()
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSS"
+        return formatter.string(from: now as Date)
+    }
     
     @IBAction func pushLogin(_ sender: UIButton) {
         getPointLbl.text = ""
@@ -494,24 +510,67 @@ class ViewController: UIViewController, ViewControllerDelegate, UITableViewDataS
     
     @IBAction func startLog(_ sender: UIButton) {
         logstart = false
-        refreshButton.isEnabled = false
+//        refreshButton.isEnabled = false
         
-        
-        DispatchQueue.main.async {
-            self.refreshButton.isEnabled = true
+        url = url_host + "chaincode"
+        let userName: String = userNameField.text!
+        let userPass: String = passField.text!
+        let JSONData = createJSONdataForPointApp(method: "query", functionName: "get_log", args: [userName, userPass], id: 7)
+        executeJsonRpc(url_exec: url, JSONdata: JSONData) {
+            (data, response, error) in
+            if error != nil {
+                print("getlog error")
+                self.login_user = ""
+            } else {
+                do {
+                    let resjson = try JSONSerialization.jsonObject(with: data!, options: []) as? [String: Any]
+                    if resjson?["error"] != nil {
+                        DispatchQueue.main.async {
+                            self.dispAlert(title: "ログインエラー", message: "ユーザー名、もしくはパスワードが間違っています。")
+//                            self.getPointButton.isEnabled = false
+                        }
+                        self.login_user = ""
+                    } else {
+                        let result = resjson?["result"] as? [String: Any]
+                        let resmessage = result?["message"] as! String
+                        let jsonData = resmessage.data(using: String.Encoding.utf8)
+                        self.logArray = try JSONSerialization.jsonObject(with: jsonData!, options: []) as! [NSDictionary]
+                        print(self.logArray)
+                        
+                        var logl = [logPoint]()
+                        
+                        for i in 0..<self.logArray.count {
+                            let logp = logPoint()
+                            logp.tms = self.logArray[i]["Tms"] as! String
+                            logp.point = self.logArray[i]["Point"] as! Int64
+                            logl.append(logp)
+                        }
+                        
+                        self.logDescend = logl.sorted(by: {$0.tms > $1.tms})
+                        
+                        DispatchQueue.main.async {
+                            self.tableview.reloadData()
+                            self.refreshButton.isEnabled = true
+                        }
+                    }
+                } catch {
+                    print("json error")
+                    self.login_user = ""
+                    return
+                }
+            }
         }
-        
     }
     
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return logArray.count
+        return logDescend.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell: UITableViewCell = UITableViewCell(style: UITableViewCellStyle.subtitle, reuseIdentifier: "Cell")
-        cell.textLabel?.text = "\(String(describing: logArray[indexPath.row]["blocknum"]!)), \(String(describing: logArray[indexPath.row]["previousblockhash"]!))"
-        cell.detailTextLabel?.text = "\(String(describing: logArray[indexPath.row]["timestamp"]!)), \(String(describing: logArray[indexPath.row]["nonce"]!))"
+        let cell: UITableViewCell = UITableViewCell(style: UITableViewCellStyle.value1, reuseIdentifier: "Cell")
+        cell.textLabel?.text = "\(String(describing: logDescend[indexPath.row].tms))"
+        cell.detailTextLabel?.text = "\(String(describing: logDescend[indexPath.row].point))"
         return cell
     }
     
