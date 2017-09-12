@@ -33,7 +33,7 @@ class ViewController: UIViewController, ViewControllerDelegate, UITableViewDataS
     
     
     var url: String = ""
-    let url_host: String = "http://172.16.16.22:7050/"
+    let url_host: String = "http://172.16.22.241:7050/"
 //    let url_host: String = "http://172.22.68.165:5000/"
 //    let url_host: String = "http://localhost:7050/"
     
@@ -116,7 +116,6 @@ class ViewController: UIViewController, ViewControllerDelegate, UITableViewDataS
             (data, response, error) in
             if error != nil {
                 print("login error")
-                print(error)
             } else {
                 print("login success")
                 self.initDeploy()
@@ -130,7 +129,7 @@ class ViewController: UIViewController, ViewControllerDelegate, UITableViewDataS
 //        let JSONdata = createJSONdataForPointApp(method: "deploy", functionName: "init", args: [], id: 1)
         
         url = url_host + "chaincode";
-        let JSONdata = createJSONdataForPointApp(method: "deploy", functionName: "get_all", args: ["ce4dcfaecae4ca6dd3e37dddc473ff61b956b9b11909ffcc47959c8fc75958b8d8d44cc17cd830ca9052af3d357a0f758f1c042c3c3022cb638fd6073a527f7c"], id: 1)
+        let JSONdata = createJSONdataForPointApp(method: "deploy", functionName: "get_all", args: ["fd9d36727b5bf4c9c969104622920793245060d58570775236bac49572e68858d54ae856687db52e69bdea2b108c57899ae9eb671b2b80b06491c8e213d9dbc8"], id: 1)
         
         executeJsonRpc(url_exec: url, JSONdata: JSONdata) {
             (data, response, error) in
@@ -160,13 +159,11 @@ class ViewController: UIViewController, ViewControllerDelegate, UITableViewDataS
             (data, response, error) in
             if error != nil {
                 print("refresh error")
-                print(error)
                 self.login_user = ""
                 self.login_pass = ""
             } else {
                 do {
                     let resjson = try JSONSerialization.jsonObject(with: data!, options: []) as? [String: Any]
-                    print(resjson)
                     if resjson?["error"] != nil {
                         DispatchQueue.main.async {
                             self.dispAlert(title: "ログインエラー", message: "ユーザー名、もしくはパスワードが間違っています。")
@@ -177,7 +174,6 @@ class ViewController: UIViewController, ViewControllerDelegate, UITableViewDataS
                     } else {
                         // 情報変わるので修正
                         let result = resjson?["result"] as? [String: Any]
-                        print(result)
                         let resmessage = result?["message"] as! String
                         let jsonData = resmessage.data(using: String.Encoding.utf8)
                         self.pointInfo = try JSONSerialization.jsonObject(with: jsonData!, options: []) as! NSDictionary
@@ -201,28 +197,31 @@ class ViewController: UIViewController, ViewControllerDelegate, UITableViewDataS
         }
     }
     
-    // heightなし
     func checkUser() {
         url = url_host + "chaincode"
-        let today = getToday()
         let checkName: String = userNameField.text!
         let checkPass: String = passField.text!
-        let JSONData = createJSONdataForPointApp(method: "query", functionName: "refresh", args: [today, checkName, checkPass], id: 5)
+        let JSONData = createJSONdataForPointApp(method: "query", functionName: "refresh", args: [checkName, checkPass], id: 5)
         executeJsonRpc(url_exec: url, JSONdata: JSONData) {
             (data, response, error) in
             if error != nil {
-                print("check error")
+                print("refresh error")
             } else {
                 do {
                     let resjson = try JSONSerialization.jsonObject(with: data!, options: []) as? [String: Any]
                     if resjson?["error"] != nil {
-                        if String(describing: resjson?["error"]!).contains("Pass error") {
+                        if String(describing: resjson?["error"]!).contains("not exist") {
                             DispatchQueue.main.async {
-                                self.dispAlert(title: "登録エラー", message: "同名のユーザーが既に存在します。")
-                                return
+                                self.addUser(userName: checkName, userPass: checkPass)
+                            }
+                        } else {
+                            DispatchQueue.main.async {
+                                self.dispAlert(title: "ログインエラー", message: "ユーザー名、もしくはパスワードが間違っています。")
+                                self.getPointButton.isEnabled = false
                             }
                         }
-                        self.addUser(userName: checkName, userPass: checkPass)
+                        
+                        
                     } else {
                         DispatchQueue.main.async {
                             self.dispAlert(title: "登録エラー", message: "同名のユーザーが既に存在します。")
@@ -261,6 +260,13 @@ class ViewController: UIViewController, ViewControllerDelegate, UITableViewDataS
                         print("add success!")
                         self.login_user = userName
                         self.login_pass = userPass
+                        DispatchQueue.main.async {
+                            self.dispAlert(title: "新規登録", message: "登録が完了しました。")
+                            self.loginUserLbl.text = ""
+                            self.loginStatusLbl.isHidden = true
+                            self.pointLbl.text = ""
+                            self.getPointLbl.text = ""
+                        }
 //                        self.getPointInfo()
                     }
                 } catch {
@@ -454,7 +460,6 @@ class ViewController: UIViewController, ViewControllerDelegate, UITableViewDataS
             (data, response, error) in
             if error != nil {
                 print("getchain error")
-                print(error)
             } else {
                 print("getchain success!")
                 do {
@@ -476,8 +481,8 @@ class ViewController: UIViewController, ViewControllerDelegate, UITableViewDataS
     
     @IBAction func pushNewAccount(_ sender: UIButton) {
         getPointLbl.text = ""
-//        checkUser()
-        addUser(userName: userNameField.text!, userPass: passField.text!)
+        checkUser()
+//        addUser(userName: userNameField.text!, userPass: passField.text!)
     }
     
     
